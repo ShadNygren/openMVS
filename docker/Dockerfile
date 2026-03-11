@@ -143,13 +143,13 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libjpeg-turbo8 \
     libtiff6 \
     libjxl0.11 \
-    libopencv-core4.10t64 \
-    libopencv-imgproc4.10t64 \
-    libopencv-imgcodecs4.10t64 \
-    libopencv-features2d4.10t64 \
-    libopencv-calib3d4.10t64 \
-    libopencv-highgui4.10t64 \
-    libopencv-flann4.10t64 \
+    libopencv-core410 \
+    libopencv-imgproc410 \
+    libopencv-imgcodecs410 \
+    libopencv-features2d410 \
+    libopencv-calib3d410 \
+    libopencv-highgui410 \
+    libopencv-flann410 \
     python3 \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
