@@ -20,6 +20,7 @@
 | Component | Version | Source | License |
 |-----------|---------|--------|---------|
 | Eigen | 3.4.x | https://gitlab.com/libeigen/eigen (branch 3.4) | MPL-2.0 |
+| OpenCV | 4.10.0 | https://github.com/opencv/opencv (tag 4.10.0) | Apache-2.0 |
 | CGAL | 6.0.1 | https://github.com/CGAL/cgal (tag v6.0.1) | LGPL-3.0 / GPL-3.0 |
 | VCGlib | HEAD | https://github.com/cdcseacave/VCG | GPL-3.0 |
 
@@ -42,12 +43,7 @@
 | libboost-program-options1.83.0 | 1.83.0 | CLI argument parsing | BSL-1.0 |
 | libboost-serialization1.83.0 | 1.83.0 | Object serialization | BSL-1.0 |
 | libboost-system1.83.0 | 1.83.0 | System utilities | BSL-1.0 |
-| libopencv-core406t64 | 4.6.0 | Core computer vision | Apache-2.0 |
-| libopencv-imgcodecs406t64 | 4.6.0 | Image I/O | Apache-2.0 |
-| libopencv-imgproc406t64 | 4.6.0 | Image processing | Apache-2.0 |
-| libopencv-features2d406t64 | 4.6.0 | Feature detection | Apache-2.0 |
-| libopencv-calib3d406t64 | 4.6.0 | Camera calibration | Apache-2.0 |
-| libopencv-highgui406t64 | 4.6.0 | GUI/display | Apache-2.0 |
+| OpenCV 4.10.0 (from source) | 4.10.0 | Compiled from source — see above | Apache-2.0 |
 | libgmp10 | 6.3.0 | Arbitrary precision math | LGPL-3.0 |
 | libmpfr6 | 4.2.1 | Multi-precision floats | LGPL-3.0 |
 | libgomp1 | 14.x | OpenMP runtime | GPL-3.0 (runtime exception) |

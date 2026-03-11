@@ -56,8 +56,10 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libboost-serialization-dev \
     libboost-system-dev \
     libboost-thread-dev \
-    # OpenCV
-    libopencv-dev \
+    # OpenCV build deps (we compile 4.10 from source for JPEGXL support)
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
     # CGAL dependencies
     libgmp-dev \
     libmpfr-dev \
@@ -78,6 +80,22 @@ RUN git clone --depth 1 --branch 3.4 https://gitlab.com/libeigen/eigen.git \
         $([ "$CUDA" = "1" ] && echo "-DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda/") \
     && cmake --build eigen_build --target install \
     && rm -rf eigen eigen_build
+
+# -- OpenCV 4.10.0 (from source, Ubuntu 24.04 only ships 4.6) ----------------
+# OpenMVS requires cv::IMWRITE_JPEGXL_QUALITY which was added in OpenCV 4.8
+RUN git clone --depth 1 --branch 4.10.0 https://github.com/opencv/opencv.git \
+    && cmake -S opencv -B opencv_build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_LIST=core,imgproc,imgcodecs,features2d,calib3d,highgui,flann \
+        -DWITH_JPEG=ON -DWITH_PNG=ON -DWITH_TIFF=ON -DWITH_JPEGXL=ON \
+        -DWITH_EIGEN=ON -DEIGEN_INCLUDE_PATH=/usr/local/include/eigen3 \
+        -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_EXAMPLES=OFF \
+        -DBUILD_opencv_apps=OFF -DBUILD_DOCS=OFF \
+        -DBUILD_SHARED_LIBS=ON \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && cmake --build opencv_build --parallel "$(nproc)" \
+    && cmake --install opencv_build \
+    && rm -rf opencv opencv_build
 
 # -- CGAL v6.0.1 (header-only library, from source) --------------------------
 RUN git clone --depth 1 --branch v6.0.1 https://github.com/CGAL/cgal.git \
@@ -134,12 +152,6 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libboost-system1.83.0 \
     libgmp10 \
     libmpfr6 \
-    libopencv-core406t64 \
-    libopencv-imgcodecs406t64 \
-    libopencv-imgproc406t64 \
-    libopencv-features2d406t64 \
-    libopencv-calib3d406t64 \
-    libopencv-highgui406t64 \
     libgomp1 \
     libglu1-mesa \
     libglew2.2 \
@@ -158,6 +170,7 @@ COPY --from=builder /usr/local/lib/libMVS* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libCommon* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libIO* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libMath* /usr/local/lib/
+COPY --from=builder /usr/local/lib/libopencv* /usr/local/lib/
 
 # -- Legal notices, documentation, and examples (AGPL-3.0 requires this) -----
 COPY --from=builder /build/openMVS/LICENSE /usr/share/doc/openmvs/LICENSE
