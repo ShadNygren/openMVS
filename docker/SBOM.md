@@ -20,6 +20,7 @@
 | Component | Version | Source | License |
 |-----------|---------|--------|---------|
 | Eigen | 3.4.x | https://gitlab.com/libeigen/eigen (branch 3.4) | MPL-2.0 |
+| OpenCV | 4.10.0 | https://github.com/opencv/opencv (tag 4.10.0) | Apache-2.0 |
 | VCGlib | HEAD | https://github.com/cdcseacave/VCG | GPL-3.0 |
 
 ## System Packages (Ubuntu 26.04 APT)
@@ -43,7 +44,7 @@
 | libboost-program-options1.90.0 | 1.90.0 | CLI argument parsing | BSL-1.0 |
 | libboost-serialization1.90.0 | 1.90.0 | Object serialization | BSL-1.0 |
 | libboost-system1.90.0 | 1.90.0 | System utilities | BSL-1.0 |
-| libopencv-*4.10t64 | 4.10.0 | Computer vision (from APT) | Apache-2.0 |
+| OpenCV 4.10.0 (from source) | 4.10.0 | Compiled with JPEGXL support | Apache-2.0 |
 | libgmp10 | 6.3.0 | Arbitrary precision math | LGPL-3.0 |
 | libmpfr6 | 4.2.1 | Multi-precision floats | LGPL-3.0 |
 | libgomp1 | 15.x | OpenMP runtime | GPL-3.0 (runtime exception) |

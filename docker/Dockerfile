@@ -18,7 +18,8 @@
 #                -t openmvs-cuda .
 #
 # NOTE: CUDA variant still uses Ubuntu 24.04 base (no nvidia/cuda 26.04 images yet).
-#       CPU-only defaults to Ubuntu 26.04 which ships OpenCV 4.10, Boost 1.90, etc.
+#       CPU-only defaults to Ubuntu 26.04 (Boost 1.90, CGAL 6.1 from apt).
+#       OpenCV 4.10 still compiled from source (Ubuntu's package lacks JPEGXL codec).
 #
 # SBOM: see docker/SBOM.md for full Software Bill of Materials
 # =============================================================================
@@ -41,7 +42,8 @@ LABEL org.opencontainers.image.source="https://github.com/ShadNygren/openMVS"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # -- System build dependencies (single layer, sorted, no-install-recommends) --
-# Ubuntu 26.04 ships OpenCV 4.10, CGAL 6.1, Boost 1.90, nanoflann 1.9
+# Ubuntu 26.04 ships CGAL 6.1, Boost 1.90, nanoflann 1.9 from apt.
+# OpenCV must be compiled from source — Ubuntu's package lacks JPEGXL codec.
 RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     build-essential \
     ca-certificates \
@@ -60,8 +62,10 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libboost-serialization-dev \
     libboost-system-dev \
     libboost-thread-dev \
-    # OpenCV 4.10 (Ubuntu 26.04 ships with JPEGXL support built-in)
-    libopencv-dev \
+    # OpenCV build deps (Ubuntu's 4.10 package lacks JPEGXL codec support)
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
     # CGAL 6.1 (header-only, from Ubuntu 26.04 packages)
     libcgal-dev \
     # CGAL dependencies
@@ -84,6 +88,22 @@ RUN git clone --depth 1 --branch 3.4 https://gitlab.com/libeigen/eigen.git \
         $([ "$CUDA" = "1" ] && echo "-DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda/") \
     && cmake --build eigen_build --target install \
     && rm -rf eigen eigen_build
+
+# -- OpenCV 4.10.0 (from source — Ubuntu's package lacks JPEGXL codec) -------
+# OpenMVS requires cv::IMWRITE_JPEGXL_QUALITY which needs -DWITH_JPEGXL=ON
+RUN git clone --depth 1 --branch 4.10.0 https://github.com/opencv/opencv.git \
+    && cmake -S opencv -B opencv_build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_LIST=core,imgproc,imgcodecs,features2d,calib3d,highgui,flann \
+        -DWITH_JPEG=ON -DWITH_PNG=ON -DWITH_TIFF=ON -DWITH_JPEGXL=ON \
+        -DWITH_EIGEN=ON -DEIGEN_INCLUDE_PATH=/usr/local/include/eigen3 \
+        -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_EXAMPLES=OFF \
+        -DBUILD_opencv_apps=OFF -DBUILD_DOCS=OFF \
+        -DBUILD_SHARED_LIBS=ON \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && cmake --build opencv_build --parallel "$(nproc)" \
+    && cmake --install opencv_build \
+    && rm -rf opencv opencv_build
 
 # -- VCGlib (header-only mesh library) ----------------------------------------
 RUN git clone --depth 1 https://github.com/cdcseacave/VCG.git /vcglib
@@ -126,7 +146,7 @@ LABEL org.opencontainers.image.vendor="ShadNygren"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # -- Runtime libraries only (no -dev packages, no compilers) ------------------
-# Ubuntu 26.04: Boost 1.90, libjxl 0.11, OpenCV 4.10
+# Ubuntu 26.04: Boost 1.90, libjxl 0.11. OpenCV copied from builder (source build).
 RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     ca-certificates \
     libboost-iostreams1.90.0 \
@@ -142,13 +162,6 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libjpeg-turbo8 \
     libtiff6 \
     libjxl0.11 \
-    libopencv-core410 \
-    libopencv-imgproc410 \
-    libopencv-imgcodecs410 \
-    libopencv-features2d410 \
-    libopencv-calib3d410 \
-    libopencv-highgui410 \
-    libopencv-flann410 \
     python3 \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
@@ -159,6 +172,7 @@ COPY --from=builder /usr/local/lib/libMVS* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libCommon* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libIO* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libMath* /usr/local/lib/
+COPY --from=builder /usr/local/lib/libopencv* /usr/local/lib/
 
 # -- Legal notices, documentation, and examples (AGPL-3.0 requires this) -----
 COPY --from=builder /build/openMVS/LICENSE /usr/share/doc/openmvs/LICENSE
