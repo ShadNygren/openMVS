@@ -74,15 +74,24 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CUDA=0
-            BASE_IMAGE=ubuntu:24.04
-            RUNTIME_IMAGE=ubuntu:24.04
+            BASE_IMAGE=ubuntu:26.04
+            RUNTIME_IMAGE=ubuntu:26.04
           cache-from: type=gha,scope=openmvs-cpu
           cache-to: type=gha,mode=max,scope=openmvs-cpu
           provenance: true
           sbom: true
 
+  # CUDA build disabled until nvidia/cuda images for Ubuntu 26.04 are available
+  # (expected shortly after Ubuntu 26.04 GA on April 23, 2026)
+  # build-cuda:
+  #   name: Build CUDA Image
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 90
+  #
+  #   steps:
   build-cuda:
     name: Build CUDA Image
+    if: false  # Disabled: no nvidia/cuda:*-ubuntu26.04 images yet
     runs-on: ubuntu-latest
     timeout-minutes: 90
 

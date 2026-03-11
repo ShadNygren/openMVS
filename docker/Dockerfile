@@ -1,7 +1,7 @@
 # =============================================================================
 # OpenMVS Docker Image — Multi-Stage Build
 # =============================================================================
-# Builds OpenMVS v2.4.0+ from source on Ubuntu 24.04 with optional CUDA support.
+# Builds OpenMVS v2.4.0+ from source on Ubuntu 26.04 with optional CUDA support.
 #
 # OpenMVS is licensed under AGPL-3.0. See LICENSE and COPYRIGHT.md in the
 # repository root for full license terms and third-party notices.
@@ -17,12 +17,15 @@
 #                --build-arg RUNTIME_IMAGE=nvidia/cuda:12.9.1-runtime-ubuntu24.04 \
 #                -t openmvs-cuda .
 #
+# NOTE: CUDA variant still uses Ubuntu 24.04 base (no nvidia/cuda 26.04 images yet).
+#       CPU-only defaults to Ubuntu 26.04 which ships OpenCV 4.10, Boost 1.90, etc.
+#
 # SBOM: see docker/SBOM.md for full Software Bill of Materials
 # =============================================================================
 
 # -- Configurable base images ------------------------------------------------
-ARG BASE_IMAGE=ubuntu:24.04
-ARG RUNTIME_IMAGE=ubuntu:24.04
+ARG BASE_IMAGE=ubuntu:26.04
+ARG RUNTIME_IMAGE=ubuntu:26.04
 
 # =============================================================================
 # Stage 1: Builder — compile all dependencies and OpenMVS from source
@@ -38,6 +41,7 @@ LABEL org.opencontainers.image.source="https://github.com/ShadNygren/openMVS"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # -- System build dependencies (single layer, sorted, no-install-recommends) --
+# Ubuntu 26.04 ships OpenCV 4.10, CGAL 6.1, Boost 1.90, nanoflann 1.9
 RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     build-essential \
     ca-certificates \
@@ -56,10 +60,10 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libboost-serialization-dev \
     libboost-system-dev \
     libboost-thread-dev \
-    # OpenCV build deps (we compile 4.10 from source for JPEGXL support)
-    libavcodec-dev \
-    libavformat-dev \
-    libswscale-dev \
+    # OpenCV 4.10 (Ubuntu 26.04 ships with JPEGXL support built-in)
+    libopencv-dev \
+    # CGAL 6.1 (header-only, from Ubuntu 26.04 packages)
+    libcgal-dev \
     # CGAL dependencies
     libgmp-dev \
     libmpfr-dev \
@@ -80,28 +84,6 @@ RUN git clone --depth 1 --branch 3.4 https://gitlab.com/libeigen/eigen.git \
         $([ "$CUDA" = "1" ] && echo "-DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda/") \
     && cmake --build eigen_build --target install \
     && rm -rf eigen eigen_build
-
-# -- OpenCV 4.10.0 (from source, Ubuntu 24.04 only ships 4.6) ----------------
-# OpenMVS requires cv::IMWRITE_JPEGXL_QUALITY which was added in OpenCV 4.8
-RUN git clone --depth 1 --branch 4.10.0 https://github.com/opencv/opencv.git \
-    && cmake -S opencv -B opencv_build \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_LIST=core,imgproc,imgcodecs,features2d,calib3d,highgui,flann \
-        -DWITH_JPEG=ON -DWITH_PNG=ON -DWITH_TIFF=ON -DWITH_JPEGXL=ON \
-        -DWITH_EIGEN=ON -DEIGEN_INCLUDE_PATH=/usr/local/include/eigen3 \
-        -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_EXAMPLES=OFF \
-        -DBUILD_opencv_apps=OFF -DBUILD_DOCS=OFF \
-        -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_INSTALL_PREFIX=/usr/local \
-    && cmake --build opencv_build --parallel "$(nproc)" \
-    && cmake --install opencv_build \
-    && rm -rf opencv opencv_build
-
-# -- CGAL v6.0.1 (header-only library, from source) --------------------------
-RUN git clone --depth 1 --branch v6.0.1 https://github.com/CGAL/cgal.git \
-    && cmake -S cgal -B cgal_build \
-    && cmake --build cgal_build --target install \
-    && rm -rf cgal cgal_build
 
 # -- VCGlib (header-only mesh library) ----------------------------------------
 RUN git clone --depth 1 https://github.com/cdcseacave/VCG.git /vcglib
@@ -144,12 +126,13 @@ LABEL org.opencontainers.image.vendor="ShadNygren"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # -- Runtime libraries only (no -dev packages, no compilers) ------------------
+# Ubuntu 26.04: Boost 1.90, libjxl 0.11, OpenCV 4.10
 RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     ca-certificates \
-    libboost-iostreams1.83.0 \
-    libboost-program-options1.83.0 \
-    libboost-serialization1.83.0 \
-    libboost-system1.83.0 \
+    libboost-iostreams1.90.0 \
+    libboost-program-options1.90.0 \
+    libboost-serialization1.90.0 \
+    libboost-system1.90.0 \
     libgmp10 \
     libmpfr6 \
     libgomp1 \
@@ -159,7 +142,14 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libpng16-16t64 \
     libjpeg-turbo8 \
     libtiff6 \
-    libjxl0.7 \
+    libjxl0.11 \
+    libopencv-core4.10t64 \
+    libopencv-imgproc4.10t64 \
+    libopencv-imgcodecs4.10t64 \
+    libopencv-features2d4.10t64 \
+    libopencv-calib3d4.10t64 \
+    libopencv-highgui4.10t64 \
+    libopencv-flann4.10t64 \
     python3 \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
@@ -170,7 +160,6 @@ COPY --from=builder /usr/local/lib/libMVS* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libCommon* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libIO* /usr/local/lib/
 COPY --from=builder /usr/local/lib/libMath* /usr/local/lib/
-COPY --from=builder /usr/local/lib/libopencv* /usr/local/lib/
 
 # -- Legal notices, documentation, and examples (AGPL-3.0 requires this) -----
 COPY --from=builder /build/openMVS/LICENSE /usr/share/doc/openmvs/LICENSE
@@ -183,7 +172,7 @@ COPY --from=builder /build/openMVS/docker/README.md /usr/share/doc/openmvs/DOCKE
 # Refresh shared library cache
 RUN ldconfig
 
-# -- Python venv (PEP 668 compliance on Ubuntu 24.04) ------------------------
+# -- Python venv (PEP 668 compliance on Ubuntu 26.04) ------------------------
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:/usr/local/bin/OpenMVS:$PATH"
