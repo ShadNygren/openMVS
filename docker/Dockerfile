@@ -147,7 +147,7 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libpng16-16t64 \
     libjpeg-turbo8 \
     libtiff6 \
-    libjxl0.9 \
+    libjxl0.7 \
     python3 \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*

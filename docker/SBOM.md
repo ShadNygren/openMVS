@@ -57,7 +57,7 @@
 | libpng16-16t64 | 1.6.43 | PNG image I/O | Libpng |
 | libjpeg-turbo8 | 2.1.5 | JPEG image I/O | IJG / BSD-3-Clause |
 | libtiff6 | 4.5.1 | TIFF image I/O | libtiff |
-| libjxl0.9 | 0.9.x | JPEG XL image I/O | BSD-3-Clause |
+| libjxl0.7 | 0.7.x | JPEG XL image I/O | BSD-3-Clause |
 | python3 | 3.12.x | Python runtime | PSF-2.0 |
 | python3-venv | 3.12.x | Virtual environments | PSF-2.0 |
 
