@@ -132,7 +132,6 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     libboost-iostreams1.90.0 \
     libboost-program-options1.90.0 \
     libboost-serialization1.90.0 \
-    libboost-system1.90.0 \
     libgmp10 \
     libmpfr6 \
     libgomp1 \
