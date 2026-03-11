@@ -235,7 +235,9 @@ if(OpenMVS_USE_PYTHON)
 	endif()
 endif()
 
-FIND_PACKAGE(Boost REQUIRED COMPONENTS iostreams program_options system serialization OPTIONAL_COMPONENTS ${Boost_EXTRA_COMPONENTS})
+# Note: Boost.System is header-only since Boost 1.69 and no longer needs to be
+# listed as a COMPONENTS target (Ubuntu 26.04's Boost 1.90 has no cmake config for it)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS iostreams program_options serialization OPTIONAL_COMPONENTS ${Boost_EXTRA_COMPONENTS})
 if(Boost_FOUND)
 	ADD_DEFINITIONS(${Boost_DEFINITIONS})
 	LIST(APPEND OpenMVS_EXTRA_LIBS ${Boost_LIBRARIES})
