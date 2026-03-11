@@ -84,7 +84,7 @@ docker build --build-arg CUDA=1 \
 | `org.opencontainers.image.licenses` | AGPL-3.0 |
 | `org.opencontainers.image.vendor` | ShadNygren |
 | Python venv | `/opt/venv` |
-| Non-root user | `openmvs` (UID 1000) |
+| Non-root user | `ubuntu` (UID 1000) |
 | Binaries path | `/usr/local/bin/OpenMVS/` |
 
 ## Authoritative Sources

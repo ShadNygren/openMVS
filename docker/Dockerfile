@@ -191,14 +191,12 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:/usr/local/bin/OpenMVS:$PATH"
 
 # -- Non-root user for security ----------------------------------------------
-RUN groupadd --gid 1000 openmvs \
-    && useradd --uid 1000 --gid 1000 --create-home openmvs
-
+# Ubuntu 26.04 ships with 'ubuntu' user (UID/GID 1000) — reuse it
 # -- Working directory --------------------------------------------------------
-RUN mkdir -p /data && chown openmvs:openmvs /data
+RUN mkdir -p /data && chown ubuntu:ubuntu /data
 WORKDIR /data
 
-USER openmvs
+USER ubuntu
 
 # -- Healthcheck: verify binaries are functional ------------------------------
 HEALTHCHECK --interval=60s --timeout=5s --retries=1 \
