@@ -89,9 +89,9 @@ RUN git clone --depth 1 --branch 3.4 https://gitlab.com/libeigen/eigen.git \
     && cmake --build eigen_build --target install \
     && rm -rf eigen eigen_build
 
-# -- OpenCV 4.10.0 (from source — Ubuntu's package lacks JPEGXL codec) -------
-# OpenMVS requires cv::IMWRITE_JPEGXL_QUALITY which needs -DWITH_JPEGXL=ON
-RUN git clone --depth 1 --branch 4.10.0 https://github.com/opencv/opencv.git \
+# -- OpenCV 4.11.0 (from source — cv::IMWRITE_JPEGXL_QUALITY added in 4.11) --
+# Ubuntu 26.04 ships OpenCV 4.10 which lacks JPEGXL write support.
+RUN git clone --depth 1 --branch 4.11.0 https://github.com/opencv/opencv.git \
     && cmake -S opencv -B opencv_build \
         -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_LIST=core,imgproc,imgcodecs,features2d,calib3d,highgui,flann \
