@@ -1,0 +1,11 @@
+# Exclude version control and CI metadata (not needed for compilation)
+.git
+.github
+.gitignore
+.gitmodules
+
+# Exclude Docker build scripts (already consumed by Dockerfile)
+docker/buildFromScratch.sh
+docker/buildInDocker.sh
+docker/QUICK_START.sh
+docker/.dockerignore

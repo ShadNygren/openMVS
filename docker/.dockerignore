@@ -1,0 +1,12 @@
+# Exclude non-essential files from Docker build context
+.git
+.github
+.gitignore
+.gitmodules
+*.md
+LICENSE
+docker/
+docs/
+samples/
+scripts/
+!docker/Dockerfile
