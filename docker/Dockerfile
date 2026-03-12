@@ -123,7 +123,7 @@ RUN cmake -S openMVS -B openMVS_build \
             -DCUDA_INCLUDE_DIRS=/usr/local/cuda/include/ \
             -DCUDA_CUDART_LIBRARY=/usr/local/cuda/lib64 \
             -DCUDA_CUDA_LIBRARY=/usr/local/cuda/lib64/stubs/libcuda.so \
-            -DCMAKE_CUDA_ARCHITECTURES=75;80;86;89;90 \
+            -DCMAKE_CUDA_ARCHITECTURES=80;86;89;90 \
             -DEIGEN3_INCLUDE_DIR=/usr/local/include/eigen3") \
     && cmake --build openMVS_build --parallel "$(nproc)" \
     && cmake --install openMVS_build \
